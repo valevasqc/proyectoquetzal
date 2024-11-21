@@ -1,52 +1,69 @@
 import pandas as pd
-import numpy as np
 import matplotlib.pyplot as plt
 
-mov = pd.read_excel('PuertoQuetzal.xlsx', sheet_name='MovimientoPortuario')
-cambio = pd.read_excel('PuertoQuetzal.xlsx', sheet_name='TipoDeCambio')
-pib = pd.read_excel('PuertoQuetzal.xlsx', sheet_name='PIBAnual')
+# Cargar las hojas del archivo Excel
+data_file = "PuertoQuetzal.xlsx"
+movimiento = pd.read_excel(data_file, sheet_name="movimientoportuario")
+tipodecambio = pd.read_excel(data_file, sheet_name="tipodecambio")
+pibanual = pd.read_excel(data_file, sheet_name="pibanual")
 
-# Preparar datos: Agregar columnas útiles
-mov['Mes'] = mov.groupby('Año').cumcount() + 1
-mov['Año'] = pd.to_datetime(mov['Año'], format='%Y').dt.year   # Asegurar formato correcto
+# Limpiar y preparar los datos
+# Convertir las columnas de Año a tipo entero
+tipodecambio["Año"] = tipodecambio["Año"].astype(int)
+pibanual["Año"] = pibanual["Año"].astype(int)
 
-# Gráfico de tendencia mensual por tipo de carga
-plt.figure(figsize=(12, 6))
-for tipo in mov['Tipo de carga'].unique():
-    datos_tipo = mov[mov['Tipo de carga'] == tipo]
-    tendencia_mensual = datos_tipo.groupby('Mes')['Tonelada'].mean()
-    plt.plot(tendencia_mensual.index, tendencia_mensual.values, label=tipo)
+# Unificar los datos usando la columna Año
+data = movimiento.merge(tipodecambio, on="Año", how="left")
+data = data.merge(pibanual, on="Año", how="left")
 
-plt.title('Tendencia Mensual por Tipo de Carga')
-plt.xlabel('Mes')
-plt.ylabel('Toneladas promedio')
-plt.legend()
-plt.grid()
-plt.show()
+# Convertir Toneladas a numérico
+data["Toneladas"] = pd.to_numeric(data["Toneladas"], errors="coerce")
 
-# Diagrama de caja para las toneladas por tipo de carga
-plt.figure(figsize=(12, 6))
-mov.boxplot(column='Tonelada', by='Tipo de carga', grid=False)
-plt.title('Distribución de Toneladas por Tipo de Carga')
-plt.suptitle('')  # Quita el título automático de pandas
-plt.xlabel('Tipo de Carga')
-plt.ylabel('Toneladas')
+# Visualización 1: Distribución de toneladas por tipo de operación
+operacion_toneladas = data.groupby(["Operación", "Puerto"])["Toneladas"].sum().unstack()
+operacion_toneladas.plot(kind="bar", figsize=(10, 6))
+plt.title("Distribución de Toneladas por Operación y Puerto")
+plt.xlabel("Operación")
+plt.ylabel("Toneladas")
 plt.xticks(rotation=45)
+plt.legend(title="Puerto")
+plt.tight_layout()
 plt.show()
 
-# Fusionar datos para análisis de correlación
-# Unir las tablas por el año
-merged_data = mov.merge(cambio, on='Año').merge(pib, on='Año')
+# Visualización 2: Diagramas de caja (simplificados por promedio mensual)
+tipo_movimiento_toneladas = data.groupby("TipoDeMovimiento")["Toneladas"].mean()
+tipo_movimiento_toneladas.plot(kind="bar", figsize=(10, 6))
+plt.title("Promedio de Toneladas por Tipo de Movimiento")
+plt.xlabel("Tipo de Movimiento")
+plt.ylabel("Toneladas Promedio")
+plt.xticks(rotation=45)
+plt.tight_layout()
+plt.show()
 
-# Crear matriz de correlación
-correlation_matrix = merged_data[['Tonelada', 'Compra', 'Venta', 'PIB']].corr()
+# Visualización 3: Tendencias anuales de toneladas
+anual_toneladas = data.groupby(["Año", "Operación"])["Toneladas"].sum().unstack()
+anual_toneladas.plot(figsize=(10, 6))
+plt.title("Tendencias Anuales de Toneladas por Operación")
+plt.xlabel("Año")
+plt.ylabel("Toneladas")
+plt.legend(title="Operación")
+plt.tight_layout()
+plt.show()
 
-# Visualizar matriz de correlación
-plt.figure(figsize=(8, 6))
-plt.imshow(correlation_matrix, cmap='coolwarm', interpolation='nearest')
-plt.colorbar(label='Coeficiente de correlación')
+# Análisis de correlación
+correlation_data = data[["Toneladas", "Compra", "Venta", "PIB"]].dropna()
+correlation_matrix = correlation_data.corr()
+
+# Visualización 4: Correlaciones (texto)
+plt.figure(figsize=(6, 4))
+plt.matshow(correlation_matrix, cmap="coolwarm", fignum=1)
+plt.colorbar()
 plt.xticks(range(len(correlation_matrix.columns)), correlation_matrix.columns, rotation=45)
 plt.yticks(range(len(correlation_matrix.columns)), correlation_matrix.columns)
-plt.title('Matriz de Correlación')
+plt.title("Mapa de Calor de Correlaciones", pad=20)
+plt.tight_layout()
 plt.show()
 
+# Resumen de correlaciones
+print("Correlaciones entre variables económicas y toneladas movilizadas:")
+print(correlation_matrix)
