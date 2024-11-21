@@ -1,19 +1,20 @@
+# MODELO DE SUAVIZADO EXPONENCIAL SIMPLE 
 import pandas as pd
 import matplotlib.pyplot as plt
 
 # Cargar datos desde el archivo Excel
-file_path = "Flujo de Carga Tidy Data .xlsx"
+file_path = "PuertoQuetzal.xlsx"
 
 # Leer las hojas
-movimiento_portuario = pd.read_excel(file_path, sheet_name=0)
-tipo_cambio = pd.read_excel(file_path, sheet_name=1)
-pib_anual = pd.read_excel(file_path, sheet_name=2)
+movimientoportuario = pd.read_excel(file_path, sheet_name=0)
+tipodecambio = pd.read_excel(file_path, sheet_name=1)
+pibanual = pd.read_excel(file_path, sheet_name=2)
 
 
 # Filtrar y agrupar los datos necesarios
 # Suponemos que "Año" es el índice temporal y "Toneladas" contiene el peso
-movimiento_portuario['Mes'] = pd.to_datetime(movimiento_portuario['Año '].astype(str) + '-01')  # Si no tiene mes exacto
-toneladas_mensuales = movimiento_portuario.groupby('Mes')['Toneladas '].sum()
+movimientoportuario['Mes'] = pd.to_datetime(movimientoportuario['Año '].astype(str) + '-01')  # Si no tiene mes exacto
+toneladas_mensuales = movimientoportuario.groupby('Mes')['Toneladas '].sum()
 
 # Suavizado exponencial manual
 alpha = 0.2# Parámetro de suavizado
@@ -37,7 +38,7 @@ plt.legend()
 plt.grid()
 plt.show()
 
-# Interpretación (puedes hacer un análisis más detallado)
+# Interpretación 
 print("La tendencia muestra un patrón de: ")
 if suavizado.iloc[-1] > suavizado.iloc[0]:
     print("Crecimiento")
