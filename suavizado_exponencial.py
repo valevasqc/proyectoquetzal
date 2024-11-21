@@ -13,8 +13,8 @@ pibanual = pd.read_excel(file_path, sheet_name=2)
 
 # Filtrar y agrupar los datos necesarios
 # Suponemos que "Año" es el índice temporal y "Toneladas" contiene el peso
-movimientoportuario['Mes'] = pd.to_datetime(movimientoportuario['Año '].astype(str) + '-01')  # Si no tiene mes exacto
-toneladas_mensuales = movimientoportuario.groupby('Mes')['Toneladas '].sum()
+movimientoportuario['Mes'] = pd.to_datetime(movimientoportuario['Año'].astype(str) + '-01')  # Si no tiene mes exacto
+toneladas_mensuales = movimientoportuario.groupby('Mes')['Toneladas'].sum()
 
 # Suavizado exponencial manual
 alpha = 0.2# Parámetro de suavizado
