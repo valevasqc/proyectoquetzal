@@ -1,3 +1,4 @@
+# Modelo de regresión lineal simple
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
@@ -8,21 +9,21 @@ from sklearn.preprocessing import MinMaxScaler
 from sklearn.decomposition import PCA
 
 
-data = pd.ExcelFile("Flujo _de_Carga_Tidy Data .xlsx")
+data = pd.ExcelFile("PuertoQuetzal.xlsx")
 
 
-movimiento_portuario = data.parse('Movimiento Portuario ')
-tipo_cambio = data.parse('Tipo de Cambio ')
-pib_anual = data.parse('PIB Anual ')
+movimientoportuario = data.parse('movimientoportuario')
+tipodecambio = data.parse('tipodecambio')
+pibanual = data.parse('pibanual')
 
 # Limpieza y estandarización de los nombres de columnas
-movimiento_portuario.columns = movimiento_portuario.columns.str.strip()
-tipo_cambio.columns = tipo_cambio.columns.str.strip()
-pib_anual.columns = pib_anual.columns.str.strip()
+movimientoportuario.columns = movimientoportuario.columns.str.strip()
+tipodecambio.columns = tipodecambio.columns.str.strip()
+pibanual.columns = pibanual.columns.str.strip()
 
 
-movimiento_merged = movimiento_portuario.merge(tipo_cambio, on="Año")
-final_data = movimiento_merged.merge(pib_anual, on="Año")
+movimiento_merged = movimientoportuario.merge(tipodecambio, on="Año")
+final_data = movimiento_merged.merge(pibanual, on="Año")
 
 # Datos climáticos 
 climatic_data = {
@@ -51,7 +52,7 @@ for _, row in final_data.iterrows():
             "Puerto": row["Puerto"],
             "Toneladas_Mensual": row["Toneladas"] / 12,
             "Compra": row["Compra"],
-            "PIB (Millones Q)": row["PIB (Millones Q)"],
+            "PIB": row["PIB"],
             "Temperatura": row["Temperatura"],
             "Precipitacion": row["Precipitacion"]
         })
@@ -59,7 +60,7 @@ for _, row in final_data.iterrows():
 df_monthly = pd.DataFrame(monthly_data)
 
 
-X = df_monthly[["Compra", "PIB (Millones Q)", "Temperatura", "Precipitacion"]]
+X = df_monthly[["Compra", "PIB", "Temperatura", "Precipitacion"]]
 y = df_monthly["Toneladas_Mensual"]
 
 # Normalización (Min-Max Scaling)
