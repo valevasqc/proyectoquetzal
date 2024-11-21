@@ -56,6 +56,20 @@ for t in range(len(valores)):
 # Convertir forecast a arreglo numpy para las operaciones
 forecast = np.array(forecast)
 
+# Imprimir los componentes finales
+final_L = L[-1]
+final_T = T[-1]
+final_S = S[-season_length:]  # Última temporada completa
+
+print("\n=== Componentes finales del modelo Holt-Winters ===")
+print(f"Nivel (L_t): {final_L}")
+print(f"Tendencia (T_t): {final_T}")
+print(f"Estacionalidad (S_t para los últimos {season_length} periodos): {final_S}")
+
+# Construir la ecuación del modelo
+print("\nEcuación del modelo Holt-Winters (aditivo):")
+print(f"Y_t = ({final_L:.2f} + T_t * h) * S_t")
+
 # Gráfica de resultados
 plt.figure(figsize=(12, 6))
 plt.plot(fechas, valores, label="Datos reales", marker="o")
